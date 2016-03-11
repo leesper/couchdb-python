@@ -227,56 +227,66 @@ class Server(object):
         status, headers, data = self.resource.post_json('_replicate', data)
         return data
 
-    def register(self, name, password):
-        """Register regular user in authentication database.
+    def add_user(self, name, password, roles=None):
+        """Add regular user in authentication database.
         :param name: name of regular user, normally user id
         :param password: password of regular user
+        :param roles: roles of regular user
         :return: (id, rev) tuple of the registered user
         :rtype: `tuple`
         """
         user_db = self['_users']
-        doc = {'_id': 'org.couchdb.user:'+name, 'name': name, 'password': password, 'roles': [], 'type': 'user'}
-        return user_db.save(doc)
+        return user_db.save({
+            '_id': 'org.couchdb.user:' + name,
+            'name': name,
+            'password': password,
+            'roles': roles or [],
+            'type': 'user',
+        })
 
-    def login(self, name, password):
+    def login_user(self, name, password):
         """Login regular user in couch db
         :param name: name of regular user, normally user id
         :param password: password of regular user
         :return: (status, token) tuple of the login user
         :rtype: `tuple`
         """
-        data = {'name': name, 'password': password}
-        status, headers, data = self.resource.post_json('_session', data)
+        data = {
+            'name': name,
+            'password': password,
+        }
+        status, headers, _ = self.resource.post_json('_session', data)
         if status != 200:
             return status, None
         cookie = headers.headers[0].split(';')[0]
         pos = cookie.find('=')
-        token = cookie[pos+1:]
-        return status, token
+        return status, cookie[pos + 1:]
 
-    def logout(self, token):
+    def logout_user(self, token):
         """Logout regular user in couch db
         :param token: token of login user
         :return: True if successfully logout
         :rtype: bool
         """
-        header = {'Accept': 'application/json', 'Cookie': 'AuthSession='+token}
-        status, headers, data = self.resource.delete_json('_session', headers=header)
-        if status != 200:
-            return False
-        return True
+        header = {
+            'Accept': 'application/json',
+            'Cookie': 'AuthSession=' + token,
+        }
+        status, _, _ = self.resource.delete_json('_session', headers=header)
+        return status == 200
 
-    def verify(self, token):
+    def verify_user(self, token):
         """Verify whether token is ok
         :param token: token of login user
         :return: True if token is ok
         :rtype: bool
         """
-        header = {'Accept': 'application/json', 'Cookie': 'AuthSession='+token}
-        status, headers, data = self.resource.get_json('_session', headers=header)
-        if status != 200:
-            return False
-        return True
+        header = {
+            'Accept': 'application/json',
+            'Cookie': 'AuthSession=' + token,
+        }
+        status, _, _ = self.resource.get_json('_session', headers=header)
+        return status == 200
 
 
 class Database(object):

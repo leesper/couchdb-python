@@ -195,8 +195,8 @@ class ViewField(object):
     >>> class Person(Document):
     ...     name = TextField()
     ...     age = IntegerField()
-    ...     by_name = ViewField('people',
-    ...         '''function(doc) {
+    ...     by_name = ViewField('people', '''\
+    ...         function(doc) {
     ...             emit(doc.name, doc);
     ...         }''')
     >>> Person.by_name
