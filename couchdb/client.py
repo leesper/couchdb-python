@@ -297,7 +297,6 @@ class Server(object):
         :return: True if authenticated ok
         :rtype: bool
         """
-        from http import Unauthorized, ServerError
         try:
             if password is None:
                 header = {
@@ -315,9 +314,7 @@ class Server(object):
                     'password': password,
                 }
                 status, _, _ = self.resource.post_json('_session', headers=header, body=body)
-        except Unauthorized:
-            return False
-        except ServerError:
+        except:
             return False
         return status == 200
 
