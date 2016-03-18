@@ -285,8 +285,6 @@ class Server(object):
         :rtype: bool
         """
         from http import Unauthorized, ServerError
-        from string import strip
-        from base64 import encodestring
         try:
             if password is None:
                 header = {
@@ -297,9 +295,13 @@ class Server(object):
             else:
                 header = {
                     'Accept': 'application/json',
-                    'Authorization': 'Basic ' + strip(encodestring(token_or_name + ':' + password)),
+                    'Content-Type': 'application/json',
                 }
-                status, _, _ = self.resource.post_json('_session', headers=header)
+                body = {
+                    'name': token_or_name,
+                    'password': password,
+                }
+                status, _, _ = self.resource.post_json('_session', headers=header, body=body)
         except Unauthorized:
             return False
         except ServerError:
