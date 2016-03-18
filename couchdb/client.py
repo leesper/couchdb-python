@@ -284,19 +284,26 @@ class Server(object):
         :return: True if authenticated ok
         :rtype: bool
         """
-        if password is None:
-            header = {
-                'Accept': 'application/json',
-                'Cookie': 'AuthSession=' + token_or_name,
-            }
-        else:
-            from string import strip
-            from base64 import encodestring
-            header = {
-                'Accept': 'application/json',
-                'Authorization': 'Basic ' + strip(encodestring(token_or_name + ':' + password)),
-            }
-        status, _, _ = self.resource.get_json('_session', headers=header)
+        from http import Unauthorized, ServerError
+        from string import strip
+        from base64 import encodestring
+        try:
+            if password is None:
+                header = {
+                    'Accept': 'application/json',
+                    'Cookie': 'AuthSession=' + token_or_name,
+                }
+                status, _, _ = self.resource.get_json('_session', headers=header)
+            else:
+                header = {
+                    'Accept': 'application/json',
+                    'Authorization': 'Basic ' + strip(encodestring(token_or_name + ':' + password)),
+                }
+                status, _, _ = self.resource.post_json('_session', headers=header)
+        except Unauthorized:
+            return False
+        except ServerError:
+            return False
         return status == 200
 
 
