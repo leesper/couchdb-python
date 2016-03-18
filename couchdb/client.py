@@ -255,12 +255,14 @@ class Server(object):
             'name': name,
             'password': password,
         }
-        status, headers, _ = self.resource.post_json('_session', data)
-        if status != 200:
-            return status, None
-        cookie = headers.headers[0].split(';')[0]
-        pos = cookie.find('=')
-        return status, cookie[pos + 1:]
+        from http import Unauthorized
+        try:
+            status, headers, _ = self.resource.post_json('_session', data)
+            cookie = headers.headers[0].split(';')[0]
+            pos = cookie.find('=')
+            return status, cookie[pos + 1:]
+        except Unauthorized:
+            return 401, None
 
     def logout_user(self, token):
         """Logout regular user in couch db
