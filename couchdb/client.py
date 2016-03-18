@@ -302,7 +302,7 @@ class Server(object):
                     'Accept': 'application/json',
                     'Cookie': 'AuthSession=' + token_or_name,
                 }
-                status, _, _ = self.resource.get_json('_session', headers=header)
+                status, _, _ = self.resource.get_json('_session', header)
             else:
                 header = {
                     'Accept': 'application/json',
@@ -312,7 +312,7 @@ class Server(object):
                     'name': token_or_name,
                     'password': password,
                 }
-                status, _, _ = self.resource.post_json('_session', headers=header, body=body)
+                status, _, _ = self.resource.post_json('_session', body, header)
         except:
             return False
         return status == 200
