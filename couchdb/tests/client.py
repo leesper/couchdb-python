@@ -145,8 +145,9 @@ class ServerTestCase(testutil.TempDatabaseMixin, unittest.TestCase):
         try:
             server.add_user('foo', 'secret', roles=['hero'])
             status, token = server.login_user('foo', 'secret')
-            server.verify_user(token)
-            server.logout_user(token)
+            self.assertEqual(status, 200)
+            self.assertTrue(server.verify_user(token))
+            self.assertTrue(server.logout_user(token))
         finally:
             server.remove_user('foo')
 

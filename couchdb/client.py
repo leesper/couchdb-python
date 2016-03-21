@@ -273,7 +273,7 @@ class Server(object):
             cookie = headers.headers[0].split(';')[0]
             pos = cookie.find('=')
             return status, cookie[pos + 1:]
-        except:
+        except Exception:
             return 401, None
 
     def logout_user(self, token):
@@ -296,24 +296,31 @@ class Server(object):
         :return: True if authenticated ok
         :rtype: bool
         """
-        try:
-            if password is None:
-                header = {
-                    'Accept': 'application/json',
-                    'Cookie': 'AuthSession=' + token_or_name,
-                }
-                status, _, _ = self.resource.get_json('_session', header)
-            else:
-                header = {
+        def generate_headers(token=None):
+            if token is None:
+                headers = {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 }
+            else:
+                headers = {
+                    'Accept': 'application/json',
+                    'Cookie': 'AuthSession=' + token,
+                }
+            return headers
+
+        try:
+            if password is None:
+                header = generate_headers(token_or_name)
+                status, _, _ = self.resource.get_json('_session', header)
+            else:
+                header = generate_headers()
                 body = {
                     'name': token_or_name,
                     'password': password,
                 }
                 status, _, _ = self.resource.post_json('_session', body, header)
-        except:
+        except Exception:
             return False
         return status == 200
 
