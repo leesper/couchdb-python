@@ -30,6 +30,7 @@ from types import FunctionType
 from inspect import getsource
 from textwrap import dedent
 import warnings
+import sys
 
 from couchdb import http, json, util
 
@@ -270,10 +271,14 @@ class Server(object):
         }
         try:
             status, headers, _ = self.resource.post_json('_session', data)
-            cookie = headers.headers[0].split(';')[0]
+            if sys.version_info > (3, ):
+                cookie = headers._headers[0][1]
+            else:
+                cookie = headers.headers[0].split(';')[0]
             pos = cookie.find('=')
             return status, cookie[pos + 1:]
-        except Exception:
+        except Exception as e:
+            print(e)
             return 401, None
 
     def logout_user(self, token):
