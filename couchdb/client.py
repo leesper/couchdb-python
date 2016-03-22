@@ -325,7 +325,8 @@ class Server(object):
                     'password': password,
                 }
                 status, _, _ = self.resource.post_json('_session', body, header)
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
         return status == 200
 
