@@ -277,8 +277,7 @@ class Server(object):
                 cookie = headers.headers[0].split(';')[0]
             pos = cookie.find('=')
             return status, cookie[pos + 1:]
-        except Exception as e:
-            print(e)
+        except http.Unauthorized:
             return 401, None
 
     def logout_user(self, token):
@@ -325,8 +324,7 @@ class Server(object):
                     'password': password,
                 }
                 status, _, _ = self.resource.post_json('_session', body, header)
-        except Exception as e:
-            print(e)
+        except http.Unauthorized:
             return False
         return status == 200
 
