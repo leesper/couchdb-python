@@ -248,39 +248,29 @@ class Server(object):
     def remove_user(self, name):
         """Remove regular user in authentication database.
         :param name: name of regular user, normally user id
-        :return: True if successfully removed
-        :rtype: bool
         """
         user_db = self['_users']
         doc_id = 'org.couchdb.user:' + name
-        if doc_id not in user_db:
-            return False
         del user_db[doc_id]
-        return True
 
-    def login_user(self, name, password):
+    def login(self, name, password):
         """Login regular user in couch db
         :param name: name of regular user, normally user id
         :param password: password of regular user
-        :return: (status, token) tuple of the login user
-        :rtype: `tuple`
+        :return: authentication token
         """
-        data = {
+        status, headers, _ = self.resource.post_json('_session', {
             'name': name,
             'password': password,
-        }
-        try:
-            status, headers, _ = self.resource.post_json('_session', data)
-            if sys.version_info > (3, ):
-                cookie = headers._headers[0][1]
-            else:
-                cookie = headers.headers[0].split(';')[0]
-            pos = cookie.find('=')
-            return status, cookie[pos + 1:]
-        except http.Unauthorized:
-            return 401, None
+        })
+        if sys.version_info[0] > 2:
+            cookie = headers._headers[0][1]
+        else:
+            cookie = headers.headers[0].split(';')[0]
+        pos = cookie.find('=')
+        return cookie[pos + 1:]
 
-    def logout_user(self, token):
+    def logout(self, token):
         """Logout regular user in couch db
         :param token: token of login user
         :return: True if successfully logout
@@ -293,37 +283,17 @@ class Server(object):
         status, _, _ = self.resource.delete_json('_session', headers=header)
         return status == 200
 
-    def verify_user(self, token_or_name, password=None):
-        """Verify user by token or username/password pairs
-        :param token_or_name: token or username of login user
-        :param password: password of login user if given
+    def verify_token(self, token):
+        """Verify user token
+        :param token: authentication token
         :return: True if authenticated ok
         :rtype: bool
         """
-        def generate_headers(token=None):
-            if token is None:
-                headers = {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }
-            else:
-                headers = {
-                    'Accept': 'application/json',
-                    'Cookie': 'AuthSession=' + token,
-                }
-            return headers
-
         try:
-            if password is None:
-                header = generate_headers(token_or_name)
-                status, _, _ = self.resource.get_json('_session', header)
-            else:
-                header = generate_headers()
-                body = {
-                    'name': token_or_name,
-                    'password': password,
-                }
-                status, _, _ = self.resource.post_json('_session', body, header)
+            status, _, _ = self.resource.get_json('_session', {
+                'Accept': 'application/json',
+                'Cookie': 'AuthSession=' + token,
+            })
         except http.Unauthorized:
             return False
         return status == 200

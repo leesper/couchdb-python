@@ -16,11 +16,6 @@ except ImportError:
     has_setuptools = False
 
 
-requirements = []
-if sys.version_info < (2, 6):
-    requirements += ['simplejson']
-
-
 # Build setuptools-specific options (if installed).
 if not has_setuptools:
     print("WARNING: setuptools/distribute not available. Console scripts will not be installed.")
@@ -35,7 +30,7 @@ else:
                 'couchdb-replicate = couchdb.tools.replicate:main',
             ],
         },
-        'install_requires': requirements,
+        'install_requires': [],
         'test_suite': 'couchdb.tests.__main__.suite',
         'zip_safe': True,
     }
@@ -43,7 +38,7 @@ else:
 
 setup(
     name = 'CouchDB',
-    version = '1.0.1',
+    version = '1.0.2',
     description = 'Python library for working with CouchDB',
     long_description = \
 """This is a Python library for CouchDB. It provides a convenient high level
@@ -55,7 +50,7 @@ interface for the CouchDB server.""",
     license = 'BSD',
     url = 'https://github.com/djc/couchdb-python/',
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 6 - Mature',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
