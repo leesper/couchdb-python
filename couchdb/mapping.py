@@ -99,6 +99,8 @@ class Field(object):
             if callable(default):
                 default = default()
             value = default
+            if self.name in owner.__dict__.keys():
+                instance._data[self.name] = value
         return value
 
     def __set__(self, instance, value):
